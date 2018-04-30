@@ -1,0 +1,42 @@
+{
+  "name": "page-loader-g31",
+  "version": "1.0.0",
+  "description": "page-loader-g31",
+  "main": "dist/index.js",
+  "bin": {
+    "page-loader": "dist/bin/loader.js"
+  },
+  "scripts": {
+    "test": "jest",
+    "babel-node": "babel-node",
+    "prepublishOnly": "npm run build",
+    "eslint": "eslint",
+    "build": "NODE_ENV=production babel src --out-dir dist --source-maps inline"
+  },
+  "files": [
+    "dist"
+  ],
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "author": "",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gabos31/project-lvl3-s238.git"
+  },
+  "devDependencies": {
+    "babel-cli": "*",
+    "babel-core": "^6.26.0",
+    "babel-eslint": "*",
+    "babel-jest": "^22.4.3",
+    "babel-preset-env": "*",
+    "babel-preset-stage-0": "*",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-plugin-import": "*",
+    "eslint-plugin-jest": "^21.15.0",
+    "jest": "^22.4.3",
+    "regenerator-runtime": "^0.11.1"
+  }
+}
