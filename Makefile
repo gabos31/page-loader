@@ -8,5 +8,7 @@ lint:
 	npm run eslint .
 test:
 	npm test
+test-coverage:
+	npm test --coverage
 watch:
 	node_modules/jest/bin/jest.js --watch
