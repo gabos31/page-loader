@@ -1,7 +1,7 @@
 install:
 	npm install
 start:
-	npm run babel-node -- src/bin/loader.js https://nodejs.org/api/url.html
+	npm run babel-node -- src/bin/loader.js https://nodejs.org/api/url
 publish:
 	npm publish
 build:

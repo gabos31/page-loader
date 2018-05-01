@@ -12,9 +12,8 @@ const loader = (link, output) => {
   return axios.get(link)
     .then((response) => {
       fs.writeFile(outputFileName, response.data);
-      return response.data;
+      return { outputFileName, recivedData: response.data };
     })
-    .then(res => ({ outputFileName, recivedData: res }))
     .catch(err => console.log(err));
 };
 
