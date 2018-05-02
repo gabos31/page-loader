@@ -6,6 +6,6 @@ commander
   .version('1.0.0')
   .description('Loading web page.')
   .arguments('<linkPage>')
-  .option('-o, --output [path]', 'output path', __dirname)
+  .option('-o, --output [path]', 'output path', '.')
   .action(linkPage => loader(linkPage, commander.output))
   .parse(process.argv);

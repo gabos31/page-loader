@@ -1,7 +1,7 @@
 install:
 	npm install
 start:
-	npm run babel-node -- src/bin/loader.js https://nodejs.org/api/url
+	npm run babel-node -- src/bin/loader.js --output ./__tests__/__fixtures__ https://github.com/gabos31/project-lvl3-s238
 publish:
 	npm publish
 build:
