@@ -2,10 +2,14 @@ import axios from 'axios';
 import fs from 'mz/fs';
 import url from 'url';
 import cheerio from 'cheerio';
+import debug from 'debug';
+
+const debugHtml = debug('page-loader:html&files.js');
 
 const arrLinks = [];
 const responses = {};
 const tags = ['img', 'link', 'script'];
+debugHtml('tags for replacement %o', tags.toString());
 const attrs = { link: 'href', img: 'src', script: 'src' };
 const arrays = {};
 
@@ -19,12 +23,13 @@ const fillArrLinks = (html, outputDirPath) => {
     $(tag).each(function f() {
       const address = $(this).attr(attrs[tag]);
       if (address && url.parse(address).protocol === null) {
+        debugHtml('original references for replacement %o', address);
         arrays[tag].push(address);
       }
     });
     arrLinks.push(...arrays[tag]);
   });
-  return fs.mkdir(outputDirPath);
+  return arrLinks.length > 0 ? fs.mkdir(outputDirPath) : null;
 };
 
 const loadSubFiles = (link) => {
@@ -58,7 +63,7 @@ const replaceLink = (makeLocalLink, htmlFilePath) => {
   return fs.writeFile(htmlFilePath, responses.second);
 };
 
-const makeResult = (htmlFilePath, subDirName) => Promise.resolve({
+const makeResult = (htmlFilePath, subDirName) => ({
   htmlFilePath,
   subDirName,
   recivedData: responses.second,

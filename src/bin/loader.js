@@ -7,5 +7,7 @@ commander
   .description('Loading web page.')
   .arguments('<linkPage>')
   .option('-o, --output [path]', 'output path', '.')
-  .action(linkPage => loader(linkPage, commander.output))
+  .action((linkPage) => {
+    loader(linkPage, commander.output);
+  })
   .parse(process.argv);

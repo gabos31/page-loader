@@ -10,6 +10,8 @@ lint:
 	npm run eslint .
 test:
 	npm test
+debug:
+	DEBUG=page-loader:* npm test
 watch:
 	npm test -- --watch
 test-coverage:
