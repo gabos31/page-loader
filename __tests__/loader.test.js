@@ -4,7 +4,7 @@ import fs from 'mz/fs';
 import httpAdapter from 'axios/lib/adapters/http';
 import path from 'path';
 import os from 'os';
-import loader from '../src';
+import htmlLoad from '../src';
 
 axios.defaults.adapter = httpAdapter;
 
@@ -19,7 +19,7 @@ describe('Page loader', () => {
       htmlFilePath,
       subDirName,
       recivedData,
-    } = await loader(`${host}${pathname}`, newTmpDir);
+    } = await htmlLoad(`${host}${pathname}`, newTmpDir);
     const savedData = await fs.readFile(htmlFilePath, 'utf-8');
     nock(host).get(pathname).reply(200, recivedData);
 
