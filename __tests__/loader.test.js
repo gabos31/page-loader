@@ -17,15 +17,15 @@ describe('Page loader', () => {
     const newTmpDir = await fs.mkdtemp(`${os.tmpdir()}${path.sep}`);
     const {
       htmlFilePath,
-      subDirName,
-      recivedData,
+      assetsDirName,
+      newHtml,
     } = await htmlLoad(`${host}${pathname}`, newTmpDir);
     const savedData = await fs.readFile(htmlFilePath, 'utf-8');
-    nock(host).get(pathname).reply(200, recivedData);
+    nock(host).get(pathname).reply(200, newHtml);
 
     const response = await axios.get(`${host}${pathname}`);
     expect(path.basename(htmlFilePath)).toBe(expectedFileName);
-    expect(subDirName).toBe(expectedDirName);
+    expect(assetsDirName).toBe(expectedDirName);
     expect(savedData).toBe(response.data);
   });
 });
