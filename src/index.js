@@ -3,10 +3,10 @@ import fs from 'mz/fs';
 import url from 'url';
 import cheerio from 'cheerio';
 import debug from 'debug';
-import { join, parse, basename } from 'path';
+import { join, parse } from 'path';
 import _ from 'lodash';
 
-const debugIndex = debug('page-loader:index.js');
+const debugIndex = debug('page-loader:index');
 
 const makeName = (pathname, ext, hostname = '') =>
   `${_.compact([...hostname.split('.'), ...pathname.split('/')]).join('-')}${ext}`;
@@ -21,8 +21,7 @@ const makeAssetFilePath = (savePath, link) => {
 const makeLocalLink = (assetsDirectory, oldLink) => {
   const assetPath = makeAssetFilePath(assetsDirectory, oldLink);
   const newLink = `./${assetPath}`;
-  debugIndex('asset file name %o', basename(newLink));
-  debugIndex(`link after replacement to asset file ${basename(newLink)} %o`, newLink);
+  debugIndex('link after replacement %o', newLink);
   return newLink;
 };
 
@@ -38,7 +37,7 @@ const extractAssetsUrlsFromHtml = (html, tag) => {
   $(tag).each(function f() {
     const address = $(this).attr(attrs[tag]);
     if (address && url.parse(address).protocol === null) {
-      debugIndex('original link for replacement %o', address);
+      debugIndex('link befor replacement %o', address);
       links.push(address);
     }
   });
@@ -100,14 +99,6 @@ const replaceAssetsLinks = (html, assetsUrlsObject, assetsDirName) => {
 const saveChangedHtmlFile = (path, changedHtml) =>
   fs.writeFile(path, changedHtml);
 
-const makeResult = (newHtml, htmlFilePath, assetsDirName) =>
-  Promise.resolve({
-    htmlFilePath,
-    assetsDirName,
-    newHtml,
-  });
-
-
 export default (link, output) => {
   const { hostname, pathname } = url.parse(link);
   const assetsDirName = makeName(pathname, '_files', hostname);
@@ -116,12 +107,12 @@ export default (link, output) => {
   const assetsPath = join(output, assetsDirName);
   debugIndex('path to assets %o', `${assetsPath}/`);
 
-  const html = {};
+  let html;
   let linksObj;
 
   return loadHtml(link)
     .then(({ data }) => {
-      html.old = data;
+      html = data;
       const assetsUrlsObject = makeAssetsUrlsObject(data);
       linksObj = { ...assetsUrlsObject };
       makeAssetsDirectory(output, assetsDirName, assetsUrlsObject);
@@ -131,12 +122,11 @@ export default (link, output) => {
     .then(responsesArray =>
       saveAssets(responsesArray, linksObj, assetsPath))
     .then(() => {
-      const changedHtml = replaceAssetsLinks(html.old, linksObj, assetsDirName);
-      html.new = changedHtml;
+      const changedHtml = replaceAssetsLinks(html, linksObj, assetsDirName);
       return saveChangedHtmlFile(htmlFilePath, changedHtml);
     })
-    .then(() => makeResult(html.new, htmlFilePath, assetsDirName))
     .catch((err) => {
+      console.error(err);
       throw err;
     });
 };
