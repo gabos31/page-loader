@@ -8,12 +8,19 @@ import _ from 'lodash';
 
 const debugIndex = debug('page-loader:index');
 
-const makeName = (pathname, ext, hostname = '') =>
-  `${_.compact([...hostname.split('.'), ...pathname.split('/')]).join('-')}${ext}`;
+const makeName = (link, pathname, ext, hostname = '') => {
+  try {
+    const name = `${_.compact([...hostname.split('.'), ...pathname.split('/')]).join('-')}${ext}`;
+    return name;
+  } catch (err) {
+    const message = `Error, incorrect url '${link}'.`;
+    throw message;
+  }
+};
 
 const makeAssetFilePath = (savePath, link) => {
   const { dir, name, ext } = parse(link);
-  const assetName = makeName(`${dir}/${name}`, ext);
+  const assetName = makeName(link, `${dir}/${name}`, ext);
   const assetFilePath = join(savePath, assetName);
   return assetFilePath;
 };
@@ -134,8 +141,8 @@ const makeErrDescription = (error) => {
 
 export default (link, output) => {
   const { hostname, pathname } = url.parse(link);
-  const assetsDirName = makeName(pathname, '_files', hostname);
-  const htmlFilePath = join(output, makeName(pathname, '.html', hostname));
+  const assetsDirName = makeName(link, pathname, '_files', hostname);
+  const htmlFilePath = join(output, makeName(link, pathname, '.html', hostname));
   debugIndex('path to saved html %o', htmlFilePath);
   const assetsPath = join(output, assetsDirName);
   debugIndex('path to assets %o', `${assetsPath}/`);
