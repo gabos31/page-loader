@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import commander from 'commander';
-import loader from '..';
+import htmlLoad from '..';
 
 commander
   .version('1.0.0')
@@ -8,6 +8,10 @@ commander
   .arguments('<linkPage>')
   .option('-o, --output [path]', 'output path', '.')
   .action((linkPage) => {
-    loader(linkPage, commander.output);
+    htmlLoad(linkPage, commander.output)
+      .catch((err) => {
+        console.error(err);
+        process.exit(1);
+      });
   })
   .parse(process.argv);
