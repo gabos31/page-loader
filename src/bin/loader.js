@@ -10,7 +10,7 @@ commander
   .action((linkPage) => {
     htmlLoad(linkPage, commander.output)
       .catch((err) => {
-        console.error(err);
+        console.error(err.message);
         process.exit(1);
       });
   })

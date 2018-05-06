@@ -39,13 +39,13 @@ const getResultHttpRequest = ({ status, data }, link) => {
     return Promise.resolve(data);
   }
   const message = `Expected response code '200', but was '${status}' for '${link}'`;
-  return Promise.reject(message);
+  return Promise.reject(new Error(message));
 };
 
 const loadHtml = (link, output) => {
   if (!fs.existsSync(output)) {
     const message = `Error, path '${output}' does not exist.`;
-    return Promise.reject(message);
+    return Promise.reject(new Error(message));
   }
   return axios.get(link);
 };
@@ -95,7 +95,7 @@ const saveAssets = (dataArray, assetsUrlsObject, assetsPath, link) => {
     }
     const message = ['Expected response code \'200\', ',
       `but was '${status}' for '${origin}${assetsLinksList[index]}'`].join('');
-    return Promise.reject(message);
+    return Promise.reject(new Error(message));
   });
   return Promise.all(promises);
 };
@@ -121,13 +121,13 @@ const makeErrDescription = (error) => {
   const { code, path, config } = error;
   if (path) {
     const message = `Error '${code}'. Check the path and permissions to '${path}'`;
-    throw message;
+    throw new Error(message);
   }
   if (config) {
     const message = [`Access error (code '${code || error.response.status}')`,
       ` to resource '${config.url}'.`,
       ' Check the network settings and the correctness of url.'].join('');
-    throw message;
+    throw new Error(message);
   }
   throw error;
 };
