@@ -40,15 +40,16 @@ describe('page-loader', () => {
 
     expect(changedHtml).toBe(expectedHtml);
   });
-  it('http response code is not 200 for html', () => {
-    const expectedMsg = `Expected response code 200, but was 201 for ${host}${pathname}`;
+  it('http response code is not 200 for html', async () => {
+    const newTmpDir = await fs.mkdtemp(`${os.tmpdir()}${path.sep}`);
+    const expectedMsg = `Expected response code '200', but was '201' for '${host}${pathname}'`;
 
     nock(host).get(pathname).reply(201);
 
-    return expect(htmlLoad(`${host}${pathname}`, '')).rejects.toBe(expectedMsg);
+    return expect(htmlLoad(`${host}${pathname}`, newTmpDir)).rejects.toBe(expectedMsg);
   });
   it('http response code is not 200 for asset', async () => {
-    const expectedMsg = `Expected response code 200, but was 205 for ${host}${asset1}`;
+    const expectedMsg = `Expected response code '200', but was '205' for '${host}${asset1}'`;
     const newTmpDir = await fs.mkdtemp(`${os.tmpdir()}${path.sep}`);
     const originalHtml = await fs.readFile(originalHtmlPath, 'utf-8');
 
@@ -58,17 +59,18 @@ describe('page-loader', () => {
 
     return expect(htmlLoad(`${host}${pathname}`, newTmpDir)).rejects.toBe(expectedMsg);
   });
-  it('incorrect url', () => {
+  it('incorrect url', async () => {
+    const newTmpDir = await fs.mkdtemp(`${os.tmpdir()}${path.sep}`);
     const incorrectHost = 'https://eqweeeq.ru';
     const incorrectPath = '/sdfdsaas3';
-    const expectedMsg = [`Access error (code ENOTFOUND) to resource ${incorrectHost}${incorrectPath}.`,
+    const expectedMsg = [`Access error (code 'ENOTFOUND') to resource '${incorrectHost}${incorrectPath}'.`,
       ' Check the network settings and the correctness of url.'].join('');
 
-    return expect(htmlLoad(`${incorrectHost}${incorrectPath}`, '')).rejects.toBe(expectedMsg);
+    return expect(htmlLoad(`${incorrectHost}${incorrectPath}`, newTmpDir)).rejects.toBe(expectedMsg);
   });
   it('incorrect output path', async () => {
     const incorrectPath = '/atatata';
-    const expectedMsg = `Error ENOENT. Check the path and permissions to ${incorrectPath}`;
+    const expectedMsg = `Error, path '${incorrectPath}' does not exist.`;
     const originalHtml = await fs.readFile(originalHtmlPath, 'utf-8');
 
     nock(host).get(pathname).reply(200, originalHtml);

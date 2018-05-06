@@ -3,7 +3,7 @@ import fs from 'mz/fs';
 import url from 'url';
 import cheerio from 'cheerio';
 import debug from 'debug';
-import { join, parse, dirname } from 'path';
+import { join, parse } from 'path';
 import _ from 'lodash';
 
 const debugIndex = debug('page-loader:index');
@@ -38,11 +38,17 @@ const getResultHttpRequest = ({ status, data }, link) => {
   if (status === 200) {
     return Promise.resolve(data);
   }
-  const message = `Expected response code 200, but was ${status} for ${link}`;
+  const message = `Expected response code '200', but was '${status}' for '${link}'`;
   return Promise.reject(message);
 };
 
-const loadHtml = link => axios.get(link);
+const loadHtml = (link, output) => {
+  if (!fs.existsSync(output)) {
+    const message = `Error, path '${output}' does not exist.`;
+    return Promise.reject(message);
+  }
+  return axios.get(link);
+};
 
 const extractAssetsUrlsFromHtml = (html, tag) => {
   const links = [];
@@ -87,8 +93,8 @@ const saveAssets = (dataArray, assetsUrlsObject, assetsPath, link) => {
         assetsLinksList[index],
       )));
     }
-    const message = ['Expected response code 200, ',
-      `but was ${status} for ${origin}${assetsLinksList[index]}`].join('');
+    const message = ['Expected response code \'200\', ',
+      `but was '${status}' for '${origin}${assetsLinksList[index]}'`].join('');
     return Promise.reject(message);
   });
   return Promise.all(promises);
@@ -114,11 +120,12 @@ const saveChangedHtmlFile = (path, changedHtml) =>
 const makeErrDescription = (error) => {
   const { code, path, config } = error;
   if (path) {
-    const message = `Error ${code}. Check the path and permissions to ${dirname(path)}`;
+    const message = `Error '${code}'. Check the path and permissions to '${path}'`;
     throw message;
   }
   if (config) {
-    const message = [`Access error (code ${code || error.response.status}) to resource ${config.url}.`,
+    const message = [`Access error (code '${code || error.response.status}')`,
+      ` to resource '${config.url}'.`,
       ' Check the network settings and the correctness of url.'].join('');
     throw message;
   }
@@ -136,7 +143,7 @@ export default (link, output) => {
   let html;
   let linksObj;
 
-  return loadHtml(link)
+  return loadHtml(link, output)
     .then(response => getResultHttpRequest(response, link))
     .then((data) => {
       html = data;
