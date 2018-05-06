@@ -3,8 +3,9 @@ import fs from 'mz/fs';
 import url from 'url';
 import cheerio from 'cheerio';
 import debug from 'debug';
-import { join, parse } from 'path';
+import { join, parse, resolve } from 'path';
 import _ from 'lodash';
+import Listr from 'listr';
 
 const debugIndex = debug('page-loader:index');
 
@@ -77,35 +78,18 @@ const makeAssetsUrlsObject = html =>
   }, {});
 
 const makeAssetsDirectory = (path, name) =>
-  fs.mkdir(join(path, name));
+  fs.mkdir(resolve(path, name));
 
-const loadAssets = (link, assetsUrlsObject) => {
-  const assetsLinksList = getAssetsLinksList(assetsUrlsObject);
+const makeFullLink = (link, pathname) => {
   const { origin } = new url.URL(link);
-  const promises = assetsLinksList
-    .map(address => axios.get(
-      `${origin}${address}`,
-      { responseType: 'stream' },
-    ));
-  return Promise.all(promises);
+  return url.resolve(origin, pathname);
 };
 
-const saveAssets = (dataArray, assetsUrlsObject, assetsPath, link) => {
-  const { origin } = new url.URL(link);
-  const assetsLinksList = getAssetsLinksList(assetsUrlsObject);
-  const promises = dataArray.map(({ data, status }, index) => {
-    if (status === 200) {
-      return data.pipe(fs.createWriteStream(makeAssetFilePath(
-        assetsPath,
-        assetsLinksList[index],
-      )));
-    }
-    const message = ['Expected response code \'200\', ',
-      `but was '${status}' for '${origin}${assetsLinksList[index]}'`].join('');
-    return Promise.reject(new Error(message));
-  });
-  return Promise.all(promises);
-};
+const loadAsset = link =>
+  axios.get(link, { responseType: 'stream' });
+
+const saveAsset = (data, assetPath) =>
+  Promise.resolve(data.pipe(fs.createWriteStream(assetPath)));
 
 const replaceAssetsLinks = (html, assetsUrlsObject, assetsDirName) => {
   const $ = cheerio.load(html);
@@ -122,7 +106,7 @@ const replaceAssetsLinks = (html, assetsUrlsObject, assetsDirName) => {
 };
 
 const saveChangedHtmlFile = (path, changedHtml) =>
-  fs.writeFile(path, changedHtml);
+  fs.writeFile(path, changedHtml, 'utf-8');
 
 const makeErrDescription = (error) => {
   const { code, path, config } = error;
@@ -139,12 +123,44 @@ const makeErrDescription = (error) => {
   throw error;
 };
 
+const makeListrTask = (link, pathname, assetsPath) => {
+  const currentLink = makeFullLink(link, pathname);
+  const assetPath = makeAssetFilePath(assetsPath, pathname);
+  const listrFn = () => loadAsset(currentLink)
+    .then(({ data, status }) => {
+      if (status === 200) {
+        return saveAsset(data, assetPath);
+      }
+      const message = ['Expected response code \'200\', ',
+        `but was '${status}' for '${currentLink}'`].join('');
+      return Promise.reject(new Error(message));
+    })
+    .then(() => Promise.resolve());
+  return { title: currentLink, task: listrFn };
+};
+
+const makeListrTasksArr = (linksArr, link, assetsPath) =>
+  linksArr.map(pathname =>
+    makeListrTask(link, pathname, assetsPath));
+
+const downloadAssets = (link, linksObj, assetsPath, output) => {
+  const linksArr = getAssetsLinksList(linksObj);
+  if (linksArr.length > 0) {
+    const listrTasksArr = makeListrTasksArr(linksArr, link, assetsPath);
+    const title = `Downloading ${link} to ${resolve(output)}`;
+    const task = () => new Listr(listrTasksArr);
+    const tasks = new Listr([{ title, task }]);
+    return tasks.run();
+  }
+  return Promise.resolve();
+};
+
 export default (link, output) => {
   const { hostname, pathname } = url.parse(link);
   const assetsDirName = makeName(link, pathname, '_files', hostname);
-  const htmlFilePath = join(output, makeName(link, pathname, '.html', hostname));
+  const htmlFilePath = resolve(output, makeName(link, pathname, '.html', hostname));
   debugIndex('path to saved html %o', htmlFilePath);
-  const assetsPath = join(output, assetsDirName);
+  const assetsPath = resolve(output, assetsDirName);
   debugIndex('path to assets %o', `${assetsPath}/`);
 
   let html;
@@ -158,9 +174,7 @@ export default (link, output) => {
       linksObj = { ...assetsUrlsObject };
       return makeAssetsDirectory(output, assetsDirName);
     })
-    .then(() => loadAssets(link, linksObj))
-    .then(responsesArray =>
-      saveAssets(responsesArray, linksObj, assetsPath, link))
+    .then(() => downloadAssets(link, linksObj, assetsPath, output))
     .then(() => {
       const changedHtml = replaceAssetsLinks(html, linksObj, assetsDirName);
       return saveChangedHtmlFile(htmlFilePath, changedHtml);
