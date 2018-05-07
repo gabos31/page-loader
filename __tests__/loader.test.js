@@ -43,7 +43,7 @@ describe.only('page-loader', () => {
 
     nock(host).get(pathname).reply(201);
 
-    await expect(htmlLoad(`${host}${pathname}`, newTmpDir))
+    return expect(htmlLoad(`${host}${pathname}`, newTmpDir))
       .rejects.toEqual(expectedErr);
   });
   it('http response code is not 200 for asset', async () => {
@@ -55,7 +55,7 @@ describe.only('page-loader', () => {
     nock(host).get(asset1).reply(205);
     nock(host).get(asset2).reply(205);
 
-    await expect(htmlLoad(`${host}${pathname}`, newTmpDir))
+    return expect(htmlLoad(`${host}${pathname}`, newTmpDir))
       .rejects.toEqual(expectedErr);
   });
   it('incorrect url', async () => {
@@ -66,7 +66,7 @@ describe.only('page-loader', () => {
       ' Check the network settings and the correctness of url.'].join('');
     const expectedErr = new Error(expectedMsg);
 
-    await expect(htmlLoad(`${incorrectHost}${incorrectPath}`, newTmpDir))
+    return expect(htmlLoad(`${incorrectHost}${incorrectPath}`, newTmpDir))
       .rejects.toEqual(expectedErr);
   });
   it('incorrect output path', async () => {
@@ -76,7 +76,7 @@ describe.only('page-loader', () => {
 
     nock(host).get(pathname).reply(200, originalHtml);
 
-    await expect(htmlLoad(`${host}${pathname}`, incorrectPath))
+    return expect(htmlLoad(`${host}${pathname}`, incorrectPath))
       .rejects.toEqual(expectedErr);
   });
 });

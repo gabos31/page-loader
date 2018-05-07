@@ -153,7 +153,7 @@ const downloadAssets = (link, linksObj, assetsPath, output) => {
   if (linksArr.length > 0) {
     const listrTasksArr = makeListrTasksArr(linksArr, link, assetsPath);
     const title = `Downloading ${link} to ${resolve(output)}`;
-    const task = () => new Listr(listrTasksArr);
+    const task = () => new Listr(listrTasksArr, { concurrent: true });
     const tasks = new Listr([{ title, task }]);
     return tasks.run();
   }
