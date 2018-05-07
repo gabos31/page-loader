@@ -19,9 +19,9 @@ const makeName = (link, pathname, ext, hostname = '') => {
   }
 };
 
-const makeAssetFilePath = (savePath, link) => {
-  const { dir, name, ext } = parse(link);
-  const assetName = makeName(link, `${dir}/${name}`, ext);
+const makeAssetFilePath = (savePath, pathname) => {
+  const { dir, name, ext } = parse(pathname);
+  const assetName = makeName(pathname, `${dir}/${name}`, ext);
   const assetFilePath = join(savePath, assetName);
   return assetFilePath;
 };
@@ -61,7 +61,7 @@ const loadHtml = (link, output) => {
 const extractAssetsUrlsFromHtml = (html, tag) => {
   const links = [];
   const $ = cheerio.load(html);
-  $(tag).each(function f() {
+  $(tag).each(function getLinkfromAttr() {
     const address = $(this).attr(attrs[tag]);
     if (address && url.parse(address).protocol === null) {
       debugIndex('link befor replacement %o', address);
@@ -73,8 +73,8 @@ const extractAssetsUrlsFromHtml = (html, tag) => {
 
 const makeAssetsUrlsObject = html =>
   tags.reduce((acc, tag) => {
-    const assetsUrls = extractAssetsUrlsFromHtml(html, tag);
-    return { ...acc, [tag]: assetsUrls };
+    const assetsUrlsArr = extractAssetsUrlsFromHtml(html, tag);
+    return { ...acc, [tag]: assetsUrlsArr };
   }, {});
 
 const makeAssetsDirectory = (path, name) =>
@@ -97,7 +97,7 @@ const replaceAssetsLinks = (html, assetsUrlsObject, assetsDirName) => {
     assetsUrlsObject[tag].forEach((link) => {
       const localLink = makeLocalLink(assetsDirName, link);
       const attr = attrs[tag];
-      $(`${tag}[${attr}='${link}']`).each(function f() {
+      $(`${tag}[${attr}='${link}']`).each(function changeLink() {
         $(this).attr(attr, localLink);
       });
     });
@@ -108,7 +108,7 @@ const replaceAssetsLinks = (html, assetsUrlsObject, assetsDirName) => {
 const saveChangedHtmlFile = (path, changedHtml) =>
   fs.writeFile(path, changedHtml, 'utf-8');
 
-const makeErrDescription = (error) => {
+const processError = (error) => {
   const { code, path, config } = error;
   if (path) {
     const message = `Error '${code}'. Check the path and permissions to '${path}'`;
@@ -126,7 +126,7 @@ const makeErrDescription = (error) => {
 const makeListrTask = (link, pathname, assetsPath) => {
   const currentLink = makeFullLink(link, pathname);
   const assetPath = makeAssetFilePath(assetsPath, pathname);
-  const listrFn = () => loadAsset(currentLink)
+  const task = () => loadAsset(currentLink)
     .then(({ data, status }) => {
       if (status === 200) {
         return saveAsset(data, assetPath);
@@ -136,7 +136,7 @@ const makeListrTask = (link, pathname, assetsPath) => {
       return Promise.reject(new Error(message));
     })
     .then(() => Promise.resolve());
-  return { title: currentLink, task: listrFn };
+  return { title: currentLink, task };
 };
 
 const makeListrTasksArr = (linksArr, link, assetsPath) =>
@@ -179,5 +179,5 @@ export default (link, output) => {
       const changedHtml = replaceAssetsLinks(html, linksObj, assetsDirName);
       return saveChangedHtmlFile(htmlFilePath, changedHtml);
     })
-    .catch(err => makeErrDescription(err));
+    .catch(err => processError(err));
 };
