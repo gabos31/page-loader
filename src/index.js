@@ -77,8 +77,13 @@ const makeAssetsUrlsObject = html =>
     return { ...acc, [tag]: assetsUrlsArr };
   }, {});
 
-const makeAssetsDirectory = (path, name) =>
-  fs.mkdir(resolve(path, name));
+const makeAssetsDirectory = (path, name, linksObj) => {
+  const linksArr = getAssetsLinksList(linksObj);
+  if (linksArr.length > 0) {
+    return fs.mkdir(resolve(path, name));
+  }
+  return Promise.resolve();
+};
 
 const makeFullLink = (link, pathname) => {
   const { origin } = new url.URL(link);
@@ -172,7 +177,7 @@ export default (link, output) => {
       html = data;
       const assetsUrlsObject = makeAssetsUrlsObject(data);
       linksObj = { ...assetsUrlsObject };
-      return makeAssetsDirectory(output, assetsDirName);
+      return makeAssetsDirectory(output, assetsDirName, linksObj);
     })
     .then(() => downloadAssets(link, linksObj, assetsPath, output))
     .then(() => {
