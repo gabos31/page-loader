@@ -14,6 +14,6 @@ This program downloads the page from web to specified folder (to the program's f
 # Using:
 `$ page-loader url` - save this page to current directory.
 
-`$ page-loader url --output path/to/dir` - save this page to specified directory.
+`$ page-loader url --output [path]` - save this page to specified directory.
 
 `$ page-loader -h` - help.
