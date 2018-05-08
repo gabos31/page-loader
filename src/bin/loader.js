@@ -7,11 +7,12 @@ commander
   .description('Loading web page.')
   .arguments('<linkPage>')
   .option('-o, --output [path]', 'output path', '.')
-  .action((linkPage) => {
-    htmlLoad(linkPage, commander.output)
-      .catch((err) => {
-        console.error(err.message);
-        process.exit(1);
-      });
+  .action(async (linkPage) => {
+    try {
+      await htmlLoad(linkPage, commander.output);
+    } catch (err) {
+      console.error(err.message);
+      process.exit(1);
+    }
   })
   .parse(process.argv);

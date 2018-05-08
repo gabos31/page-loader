@@ -44,10 +44,10 @@ const attrs = { link: 'href', img: 'src', script: 'src' };
 
 const getResultHttpRequest = ({ status, data }, link) => {
   if (status === 200) {
-    return Promise.resolve(data);
+    return data;
   }
   const message = `Expected response code '200', but was '${status}' for '${link}'`;
-  return Promise.reject(new Error(message));
+  throw new Error(message);
 };
 
 const loadHtml = (link, output) => {
@@ -131,16 +131,16 @@ const processError = (error) => {
 const makeListrTask = (link, pathname, assetsPath) => {
   const currentLink = makeFullLink(link, pathname);
   const assetPath = makeAssetFilePath(assetsPath, pathname);
-  const task = () => loadAsset(currentLink)
-    .then(({ data, status }) => {
-      if (status === 200) {
-        return saveAsset(data, assetPath);
-      }
-      const message = ['Expected response code \'200\', ',
-        `but was '${status}' for '${currentLink}'`].join('');
-      return Promise.reject(new Error(message));
-    })
-    .then(() => Promise.resolve());
+  const task = async () => {
+    const { data, status } = await loadAsset(currentLink);
+    if (status === 200) {
+      await saveAsset(data, assetPath);
+      return Promise.resolve();
+    }
+    const message = ['Expected response code \'200\', ',
+      `but was '${status}' for '${currentLink}'`].join('');
+    return Promise.reject(new Error(message));
+  };
   return { title: currentLink, task };
 };
 
@@ -160,7 +160,7 @@ const downloadAssets = (link, linksObj, assetsPath, output) => {
   return Promise.resolve();
 };
 
-export default (link, output) => {
+export default async (link, output) => {
   const { hostname, pathname } = url.parse(link);
   const assetsDirName = makeName(link, pathname, '_files', hostname);
   const htmlFilePath = resolve(output, makeName(link, pathname, '.html', hostname));
@@ -168,21 +168,16 @@ export default (link, output) => {
   const assetsPath = resolve(output, assetsDirName);
   debugIndex('path to assets %o', `${assetsPath}/`);
 
-  let html;
-  let linksObj;
-
-  return loadHtml(link, output)
-    .then(response => getResultHttpRequest(response, link))
-    .then((data) => {
-      html = data;
-      const assetsUrlsObject = makeAssetsUrlsObject(data);
-      linksObj = { ...assetsUrlsObject };
-      return makeAssetsDirectory(output, assetsDirName, linksObj);
-    })
-    .then(() => downloadAssets(link, linksObj, assetsPath, output))
-    .then(() => {
-      const changedHtml = replaceAssetsLinks(html, linksObj, assetsDirName);
-      return saveChangedHtmlFile(htmlFilePath, changedHtml);
-    })
-    .catch(err => processError(err));
+  try {
+    const response = await loadHtml(link, output);
+    const html = getResultHttpRequest(response, link);
+    const linksObj = makeAssetsUrlsObject(html);
+    await makeAssetsDirectory(output, assetsDirName, linksObj);
+    await downloadAssets(link, linksObj, assetsPath, output);
+    const changedHtml = replaceAssetsLinks(html, linksObj, assetsDirName);
+    await saveChangedHtmlFile(htmlFilePath, changedHtml);
+  } catch (err) {
+    return processError(err);
+  }
+  return Promise.resolve();
 };

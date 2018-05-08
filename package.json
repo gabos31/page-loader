@@ -26,18 +26,17 @@
     "url": "git+https://github.com/gabos31/project-lvl3-s238.git"
   },
   "devDependencies": {
-    "babel-cli": "*",
-    "babel-core": "^6.26.0",
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
     "babel-eslint": "*",
     "babel-jest": "^22.4.3",
-    "babel-preset-env": "*",
-    "babel-preset-stage-0": "*",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-0": "^6.24.1",
     "eslint": "*",
     "eslint-config-airbnb-base": "*",
     "eslint-plugin-import": "*",
     "eslint-plugin-jest": "^21.15.0",
-    "jest": "^22.4.3",
-    "regenerator-runtime": "^0.11.1"
+    "jest": "^22.4.3"
   },
   "dependencies": {
     "axios": "^0.18.0",
