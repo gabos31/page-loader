@@ -10,13 +10,11 @@ import Listr from 'listr';
 const debugIndex = debug('page-loader:index');
 
 const makeName = (link, pathname, ext, hostname = '') => {
-  try {
-    const name = `${_.compact([...hostname.split('.'), ...pathname.split('/')]).join('-')}${ext}`;
-    return name;
-  } catch (err) {
-    const message = `Error, incorrect url '${link}'.`;
-    throw message;
+  if (hostname === null) {
+    throw new Error(`Error, incorrect url '${link}'`);
   }
+  const name = `${_.compact([...hostname.split('.'), ...pathname.split('/')]).join('-')}${ext}`;
+  return name;
 };
 
 const makeAssetFilePath = (savePath, pathname) => {
@@ -161,14 +159,14 @@ const downloadAssets = (link, linksObj, assetsPath, output) => {
 };
 
 export default async (link, output) => {
-  const { hostname, pathname } = url.parse(link);
-  const assetsDirName = makeName(link, pathname, '_files', hostname);
-  const htmlFilePath = resolve(output, makeName(link, pathname, '.html', hostname));
-  debugIndex('path to saved html %o', htmlFilePath);
-  const assetsPath = resolve(output, assetsDirName);
-  debugIndex('path to assets %o', `${assetsPath}/`);
-
   try {
+    const { hostname, pathname } = url.parse(link);
+    const assetsDirName = makeName(link, pathname, '_files', hostname);
+    const htmlFilePath = resolve(output, makeName(link, pathname, '.html', hostname));
+    debugIndex('path to saved html %o', htmlFilePath);
+    const assetsPath = resolve(output, assetsDirName);
+    debugIndex('path to assets %o', `${assetsPath}/`);
+
     const response = await loadHtml(link, output);
     const html = getResultHttpRequest(response, link);
     const linksObj = makeAssetsUrlsObject(html);
