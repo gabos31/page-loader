@@ -18,7 +18,7 @@ const asset2 = '/manifest.json';
 const asset1Path = `${fixtruresSrc}original/${modifedName}_files${asset1}`;
 const asset2Path = `${fixtruresSrc}original/${modifedName}_files${asset2}`;
 
-describe.only('page-loader', () => {
+describe('page-loader', () => {
   it('correct replacement of links', async () => {
     const expectedHtmlPath = `${fixtruresSrc}changed/${modifedName}.html`;
     const newTmpDir = await fs.mkdtemp(`${os.tmpdir()}${path.sep}`);
