@@ -1,9 +1,9 @@
 # Page loader
 
-[![Build Status](https://travis-ci.org/gabos31/project-lvl3-s238.svg?branch=master)](https://travis-ci.org/gabos31/project-lvl3-s238)
-[![Maintainability](https://api.codeclimate.com/v1/badges/edaeddf0cce43a5822fe/maintainability)](https://codeclimate.com/github/gabos31/project-lvl3-s238/maintainability)
+[![Build Status](https://travis-ci.org/gabos31/page-loader.svg?branch=master)](https://travis-ci.org/gabos31/page-loader)
+[![Maintainability](https://api.codeclimate.com/v1/badges/edaeddf0cce43a5822fe/maintainability)](https://codeclimate.com/github/gabos31/page-loader/maintainability)
 
-[![Test Coverage](https://api.codeclimate.com/v1/badges/edaeddf0cce43a5822fe/test_coverage)](https://codeclimate.com/github/gabos31/project-lvl3-s238/test_coverage)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/edaeddf0cce43a5822fe/test_coverage)](https://codeclimate.com/github/gabos31/page-loader/test_coverage)
 ***
 ## Description
 Downloads a page from the Web and all the resourses associated with it for the offline use.
