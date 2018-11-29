@@ -1,6 +1,6 @@
 {
   "name": "page-loader-g31",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "page-loader-g31",
   "main": "dist/index.js",
   "bin": {
@@ -23,7 +23,7 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gabos31/project-lvl3-s238.git"
+    "url": "git+https://github.com/gabos31/page-loader.git"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
